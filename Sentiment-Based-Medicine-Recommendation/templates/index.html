@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Recommendation System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+            background-color: #f4f4f4;
+        }
+        h2 {
+            color: #007BFF;
+        }
+        input, button {
+            font-size: 18px;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.2);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .review {
+            font-size: 14px;
+            color: #555;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h2>💊 Medicine Recommendation System</h2>
+    <label for="condition">Enter a Condition:</label>
+    <input type="text" id="condition" placeholder="e.g., Diabetes">
+    <button onclick="getRecommendations()">Get Medicines</button>
+    <div id="results"></div>
+
+    <script>
+        function getRecommendations() {
+            let condition = document.getElementById("condition").value;
+            let apiUrl = "/recommend?condition=" + encodeURIComponent(condition);
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    let resultsDiv = document.getElementById("results");
+                    resultsDiv.innerHTML = "<h3>Recommended Medicines:</h3>";
+
+                    if (data.error) {
+                        resultsDiv.innerHTML += `<p style="color:red;">❌ Error: ${data.error}</p>`;
+                    } else if (data.message) {
+                        resultsDiv.innerHTML += `<p>${data.message}</p>`;
+                    } else {
+                        let tableHtml = `
+                            <table>
+                                <tr>
+                                    <th>💊 Drug Name</th>
+                                    <th>⭐ Rating</th>
+                                    <th>📊 Sentiment</th>
+                                    <th>📝 Review</th>
+                                </tr>
+                        `;
+                        data.forEach(med => {
+                            tableHtml += `
+                                <tr>
+                                    <td>${med["drugName"]}</td>
+                                    <td>${med["rating"].toFixed(1)}</td>
+                                    <td>${med["sentiment_label"]}</td>
+                                    <td class="review">${med["review"]}</td>
+                                </tr>
+                            `;
+                        });
+                        tableHtml += `</table>`;
+                        resultsDiv.innerHTML += tableHtml;
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching recommendations:", error);
+                    document.getElementById("results").innerHTML = "<p style='color:red;'>❌ Error fetching recommendations.</p>";
+                });
+        }
+    </script>
+</body>
+</html>
